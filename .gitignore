@@ -1,0 +1,4 @@
+.env
+nginx/tmp/*
+!.gitkeep
+node_modules/
