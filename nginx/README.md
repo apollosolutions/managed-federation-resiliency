@@ -18,11 +18,10 @@ unavailable.
 ## Configuring this for your gateway
 
 1. Add an nginx service to your cluster.
-2. Configure nginx to proxy requests to `https://federation.api.apollographql.com`.
+2. Configure nginx to proxy requests to `https://uplink.api.apollographql.com`.
 3. Configure the managed federation endpoints in your gateway to point to nginx:
    ```sh
-   export APOLLO_STORAGE_SECRET_BASE_URL=http://nginx
-   export APOLLO_PARTIAL_SCHEMA_BASE_URL=http://nginx
+   export APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=http://proxy
    ```
 4. Consider setting your cache storage directory to a shared volume to persist
    across restarts. You may need to configure a `[proxy_cache_lock][lock]` to
