@@ -24,7 +24,7 @@ unavailable.
    export APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=http://proxy
    ```
 4. Consider setting your cache storage directory to a shared volume to persist
-   across restarts. You may need to configure a `[proxy_cache_lock][lock]` to
+   across restarts. You may need to configure a [`proxy_cache_lock`][lock] to
    handle concurrent updates.
 
 [lock]: https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_cache_lock`
