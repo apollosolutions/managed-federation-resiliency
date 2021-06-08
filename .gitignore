@@ -1,4 +1,5 @@
 .env
 nginx/tmp/*
+webhook/cache-service/tmp/*
 !.gitkeep
 node_modules/
