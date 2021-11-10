@@ -1,0 +1,25 @@
+{
+  "name": "infra",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "infra": "bin/infra.js"
+  },
+  "scripts": {
+    "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
+    "cdk": "cdk",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "aws-cdk": "2.0.0-rc.28",
+    "jest": "^26.4.2"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-apigatewayv2-alpha": "^2.0.0-alpha.6",
+    "@aws-cdk/aws-apigatewayv2-integrations-alpha": "^2.0.0-alpha.6",
+    "aws-cdk-lib": "^2.0.0-rc.28",
+    "constructs": "^10.0.0",
+    "typescript": "^4.4.4"
+  }
+}
