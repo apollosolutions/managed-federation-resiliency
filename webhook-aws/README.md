@@ -6,7 +6,7 @@ infrastructure. It uses [CDK](https://docs.aws.amazon.com/cdk/index.html) to pro
 - An S3 bucket for storing supergraph schema backups.
 - A Lambda function for receiving the Build Notification webhook from Studio.
 - A Lambda function that serves as a fallback for the supergraph delivery Uplink API.
-- A Lambda function for serving the gateway using [apollo-server-lambda](https://www.npmjs.com/package/apollo-server-lambda).
+- A Lambda function for serving the gateway using [apollo-server-lambda](https://www.npmjs.com/package/apollo-server-lambda). **This is just for demonstration purposes. Your gateway can live anywhere, as long as it can make requests to the fallback supergraph delivery lambda function.**
 - API Gateways for routing to HTTP requests to the Lambda functions.
 - Support for secure webhooks using a secret.
 
@@ -15,7 +15,7 @@ if the Uplink request fails.
 
 ## Try it out
 
-Prerequisites:
+Prerequisites to run this demo:
 
 - Node 14 or greater and Yarn
 - The [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and an AWS account
