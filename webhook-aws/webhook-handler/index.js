@@ -81,7 +81,20 @@ export async function webhookHandler(event) {
  * @type {import("aws-lambda").Handler<import("aws-lambda").APIGatewayProxyEvent, import("aws-lambda").APIGatewayProxyResult>}
  */
 export async function fallbackHandler(event) {
-  const objectKey = `${event.headers["x-graph-ref"]}.graphql`;
+  const apiKey = await getApolloKey();
+
+  if (!event.body) {
+    return errorResponse("Missing request body");
+  }
+
+  /** @type {RequestShape} */
+  const { variables } = JSON.parse(event.body);
+
+  if (variables.apiKey !== apiKey) {
+    return errorResponse("Invalid API key");
+  }
+
+  const objectKey = `${variables.ref}.graphql`;
 
   try {
     const obj = await client.send(
@@ -92,7 +105,7 @@ export async function fallbackHandler(event) {
     );
 
     if (!obj || !obj.Body) {
-      return { statusCode: 404, body: "Not found" };
+      return errorResponse("Schema not found");
     }
 
     return {
@@ -112,32 +125,70 @@ export async function fallbackHandler(event) {
     };
   } catch (/** @type {any} */ error) {
     if (error.message === "NoSuchKey") {
-      return { statusCode: 404, body: `${objectKey} not found` };
+      return errorResponse(`${objectKey} not found`);
     } else {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ message: error.message }),
-      };
+      return errorResponse(error.message);
     }
   }
 }
 
+/**
+ * @param {string} message
+ */
+function errorResponse(message) {
+  return {
+    statusCode: 200,
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      data: {
+        routerConfig: {
+          __typename: "FetchError",
+          code: "ERROR_FROM_FALLBACK",
+          message,
+        },
+      },
+    }),
+  };
+}
+
+// ****************************************************************************
+// secrets management for the webhook signing secret and Apollo API key
+// ****************************************************************************
+
 const secretsClient = new SecretsManagerClient({});
 
 /** @type {string | undefined} */
-let memoizedSecretValue;
+let memoizedWebhookSecretValue;
 
 async function getWebhookSecret() {
-  if (!memoizedSecretValue) {
+  if (!memoizedWebhookSecretValue) {
     const command = new GetSecretValueCommand({
       SecretId: process.env.WEBHOOK_KEY_ARN,
     });
 
     const resp = await secretsClient.send(command);
-    memoizedSecretValue = resp.SecretString;
+    memoizedWebhookSecretValue = resp.SecretString;
   }
 
-  return memoizedSecretValue;
+  return memoizedWebhookSecretValue;
+}
+
+/** @type {string | undefined} */
+let memoizedApolloKeySecretValue;
+
+async function getApolloKey() {
+  if (!memoizedApolloKeySecretValue) {
+    const command = new GetSecretValueCommand({
+      SecretId: process.env.APOLLO_KEY_ARN,
+    });
+
+    const resp = await secretsClient.send(command);
+    memoizedApolloKeySecretValue = resp.SecretString;
+  }
+
+  return memoizedApolloKeySecretValue;
 }
 
 /**

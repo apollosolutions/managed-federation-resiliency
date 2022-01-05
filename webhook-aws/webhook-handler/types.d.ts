@@ -17,3 +17,8 @@ interface ResponseShape {
   variantID: string;
   timestamp: string; // ISO 8601 Date string
 }
+
+interface RequestShape {
+  query: string;
+  variables: { [key: string]: any };
+}
