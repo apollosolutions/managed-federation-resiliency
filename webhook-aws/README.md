@@ -1,4 +1,4 @@
-# AWS-flavored Webhook-triggered SDL backup
+# AWS-flavored Webhook-triggered SDL backup and Alternative Uplink Endpoint
 
 This is the same demo as the [Webhook demo](../webhook), but uses AWS
 infrastructure. It uses [CDK](https://docs.aws.amazon.com/cdk/index.html) to provision:
@@ -9,9 +9,6 @@ infrastructure. It uses [CDK](https://docs.aws.amazon.com/cdk/index.html) to pro
 - A Lambda function for serving the gateway using [apollo-server-lambda](https://www.npmjs.com/package/apollo-server-lambda). **This is just for demonstration purposes. Your gateway can live anywhere, as long as it can make requests to the fallback supergraph delivery lambda function.**
 - API Gateways for routing to HTTP requests to the Lambda functions.
 - Support for secure webhooks using a secret.
-
-The gateway example uses a custom fetcher that falls back to the Lambda function
-if the Uplink request fails.
 
 ## Try it out
 

@@ -1,41 +1,9 @@
 import { ApolloServer } from "apollo-server-lambda";
 import { ApolloGateway } from "@apollo/gateway";
-import fetcher from "make-fetch-happen";
 import {
   SecretsManagerClient,
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
-
-/** @type {typeof import("apollo-server-env").fetch}} */
-const wrappedFetcher = async (req, init) => {
-  // **************************************************************************
-  // NOTE: uncomment this line and comment out the next line to enable the
-  // default behavior using the Uplink API.
-  // **************************************************************************
-
-  // const resp = await fetcher(req, init);
-  const resp = /** @type {import("apollo-server-env").Response} */ ({
-    ok: false,
-  });
-
-  if (!resp.ok) {
-    assert(process.env.APOLLO_GRAPH_REF, "APOLLO_GRAPH_REF is not set");
-    assert(process.env.SDL_BACKUP_ENDPOINT, "SDL_BACKUP_ENDPOINT is not set");
-    assert(process.env.SDL_BACKUP_PATH, "SDL_BACKUP_PATH is not set");
-
-    const fallbackUrl = `${process.env.SDL_BACKUP_ENDPOINT}${process.env.SDL_BACKUP_PATH}`;
-
-    console.log(
-      `*** schema update request failed, using backup ${fallbackUrl} ***`
-    );
-
-    return fetcher(fallbackUrl, {
-      headers: { "x-graph-ref": process.env.APOLLO_GRAPH_REF },
-    });
-  } else {
-    return resp;
-  }
-};
 
 /** @type {import("aws-lambda").Handler | undefined} */
 let memoizedHandler;
@@ -54,7 +22,14 @@ async function createHandler() {
     const server = new ApolloServer({
       apollo: { key },
       gateway: new ApolloGateway({
-        fetcher: wrappedFetcher,
+        uplinkEndpoints: [
+          // These are the default endpoints:
+          // 'https://uplink.api.apollographql.com/',
+          // 'https://aws.uplink.api.apollographql.com/',
+
+          // This is the fallback endpoint:
+          `${process.env.SDL_BACKUP_ENDPOINT}${process.env.SDL_BACKUP_PATH}`,
+        ],
       }),
     });
     memoizedHandler = server.createHandler();
@@ -88,15 +63,4 @@ async function getApolloKey() {
   }
 
   return memoizedSecretValue;
-}
-
-/**
- * @param {any} condition
- * @param {string} message
- * @returns {asserts condition}
- */
-function assert(condition, message) {
-  if (!condition) {
-    throw new Error(message);
-  }
 }

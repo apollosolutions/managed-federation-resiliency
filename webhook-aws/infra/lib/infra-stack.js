@@ -63,6 +63,7 @@ export class InfraStack extends Stack {
       ),
       handler: "index.fallbackHandler",
       environment: {
+        APOLLO_KEY_ARN: apolloKey.secretArn,
         BUCKET_NAME: bucket.bucketName,
         BUCKET_REGION: "us-east-1",
       },
@@ -72,15 +73,21 @@ export class InfraStack extends Stack {
     // API Gateway for the webhook
     // ************************************************************************
 
-    const webhookRoute = new integrations.LambdaProxyIntegration({
-      handler: webhookHandler,
-      payloadFormatVersion: gateway.PayloadFormatVersion.VERSION_2_0,
-    });
+    const webhookRoute = new integrations.HttpLambdaIntegration(
+      "webhook-lambda-integration",
+      webhookHandler,
+      {
+        payloadFormatVersion: gateway.PayloadFormatVersion.VERSION_2_0,
+      }
+    );
 
-    const fallbackRoute = new integrations.LambdaProxyIntegration({
-      handler: fallbackHandler,
-      payloadFormatVersion: gateway.PayloadFormatVersion.VERSION_2_0,
-    });
+    const fallbackRoute = new integrations.HttpLambdaIntegration(
+      "fallback-lambda-integration",
+      fallbackHandler,
+      {
+        payloadFormatVersion: gateway.PayloadFormatVersion.VERSION_2_0,
+      }
+    );
 
     const api = new gateway.HttpApi(this, "webhook-api", {
       defaultIntegration: webhookRoute,
@@ -107,10 +114,13 @@ export class InfraStack extends Stack {
       },
     });
 
-    const gatewayRoute = new integrations.LambdaProxyIntegration({
-      handler: gatewayHandler,
-      payloadFormatVersion: gateway.PayloadFormatVersion.VERSION_2_0,
-    });
+    const gatewayRoute = new integrations.HttpLambdaIntegration(
+      "gateway-lambda-integration",
+      gatewayHandler,
+      {
+        payloadFormatVersion: gateway.PayloadFormatVersion.VERSION_2_0,
+      }
+    );
 
     const gatewayApi = new gateway.HttpApi(this, "gateway-api", {
       defaultIntegration: gatewayRoute,
@@ -123,6 +133,7 @@ export class InfraStack extends Stack {
     webhookKey.grantRead(webhookHandler);
     bucket.grantReadWrite(webhookHandler);
     bucket.grantRead(fallbackHandler);
+    apolloKey.grantRead(fallbackHandler);
     apolloKey.grantRead(gatewayHandler);
 
     // ************************************************************************
