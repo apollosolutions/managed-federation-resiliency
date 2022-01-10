@@ -16,7 +16,7 @@ Prerequisites to run this demo:
 
 - Node 14 or greater and Yarn
 - The [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and an AWS account
-- A federated graph in Apollo Studio
+- A federated graph in Apollo Studio **using `@apollo/gateway` version 0.45.0 or later**
 
 Steps:
 
