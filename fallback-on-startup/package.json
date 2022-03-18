@@ -1,0 +1,18 @@
+{
+  "name": "fallback-on-startup",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "@apollo/composition": "https://pkg.csb.dev/apollographql/federation/commit/41deb68d/@apollo/composition",
+    "@apollo/federation-internals": "https://pkg.csb.dev/apollographql/federation/commit/41deb68d/@apollo/federation-internals",
+    "@apollo/gateway": "https://pkg.csb.dev/apollographql/federation/commit/41deb68d/@apollo/gateway",
+    "@apollo/query-graphs": "https://pkg.csb.dev/apollographql/federation/commit/41deb68d/@apollo/query-graphs",
+    "@apollo/query-planner": "https://pkg.csb.dev/apollographql/federation/commit/41deb68d/@apollo/query-planner",
+    "@apollo/subgraph": "https://pkg.csb.dev/apollographql/federation/commit/41deb68d/@apollo/subgraph",
+    "apollo-server": "^3.6.4",
+    "dotenv": "^16.0.0",
+    "graphql": "^16.3.0"
+  }
+}

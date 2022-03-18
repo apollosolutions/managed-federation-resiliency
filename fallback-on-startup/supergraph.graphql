@@ -1,0 +1,154 @@
+schema
+  @core(feature: "https://specs.apollo.dev/core/v0.2")
+  @core(feature: "https://specs.apollo.dev/join/v0.2", for: EXECUTION)
+  @core(feature: "https://specs.apollo.dev/tag/v0.1") {
+  query: Query
+}
+
+directive @core(
+  feature: String!
+  as: String
+  for: core__Purpose
+) repeatable on SCHEMA
+
+directive @join__field(
+  graph: join__Graph!
+  requires: join__FieldSet
+  provides: join__FieldSet
+  type: String
+  external: Boolean
+) repeatable on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+
+directive @join__implements(
+  graph: join__Graph!
+  interface: String!
+) repeatable on OBJECT | INTERFACE
+
+directive @join__type(
+  graph: join__Graph!
+  key: join__FieldSet
+  extension: Boolean! = false
+  resolvable: Boolean! = true
+) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
+
+directive @tag(
+  name: String!
+) repeatable on FIELD_DEFINITION | OBJECT | INTERFACE | UNION
+
+enum CacheControlScope @join__type(graph: CHARACTERS) {
+  PUBLIC
+  PRIVATE
+}
+
+type Character
+  @join__type(graph: CHARACTERS, key: "id")
+  @join__type(graph: EPISODES, key: "id") {
+  id: ID
+  name: String @tag(name: "pii") @join__field(graph: CHARACTERS)
+  status: String @join__field(graph: CHARACTERS)
+  species: String @join__field(graph: CHARACTERS)
+  type: String @join__field(graph: CHARACTERS)
+  gender: String @join__field(graph: CHARACTERS)
+  origin: Location @join__field(graph: CHARACTERS)
+  location: Location @join__field(graph: CHARACTERS)
+  image: String @join__field(graph: CHARACTERS)
+  created: String @join__field(graph: CHARACTERS)
+  episode: [Episode]! @join__field(graph: EPISODES)
+}
+
+type Characters @join__type(graph: CHARACTERS) {
+  info: Info
+  results: [Character]
+}
+
+enum core__Purpose {
+  """
+  `SECURITY` features provide metadata necessary to securely resolve fields.
+  """
+  SECURITY
+
+  """
+  `EXECUTION` features provide metadata necessary for operation execution.
+  """
+  EXECUTION
+}
+
+type Episode @join__type(graph: CHARACTERS) @join__type(graph: EPISODES) {
+  id: ID
+  name: String @join__field(graph: EPISODES)
+  air_date: String @join__field(graph: EPISODES)
+  episode: String @tag(name: "internal") @join__field(graph: EPISODES)
+  characters: [Character]! @join__field(graph: EPISODES)
+  created: String @join__field(graph: EPISODES)
+}
+
+type Episodes @join__type(graph: EPISODES) {
+  info: Info
+  results: [Episode]
+}
+
+input FilterCharacter @join__type(graph: CHARACTERS) {
+  name: String
+  status: String
+  species: String
+  type: String
+  gender: String
+}
+
+input FilterEpisode @join__type(graph: EPISODES) {
+  name: String
+  episode: String
+}
+
+input FilterLocation @join__type(graph: CHARACTERS) {
+  name: String
+  type: String
+  dimension: String
+}
+
+type Info @join__type(graph: CHARACTERS) @join__type(graph: EPISODES) {
+  count: Int
+  pages: Int
+  next: Int
+  prev: Int
+}
+
+scalar join__FieldSet
+
+enum join__Graph {
+  CHARACTERS @join__graph(name: "characters", url: "http://localhost:4001")
+  EPISODES @join__graph(name: "episodes", url: "http://localhost:4002")
+}
+
+type Location @join__type(graph: CHARACTERS) {
+  id: ID
+  name: String
+  type: String
+  dimension: String
+  residents: [Character]!
+  created: String
+}
+
+type Locations @join__type(graph: CHARACTERS) {
+  info: Info
+  results: [Location]
+}
+
+type Query @join__type(graph: CHARACTERS) @join__type(graph: EPISODES) {
+  character(id: ID!): Character @join__field(graph: CHARACTERS)
+  characters(page: Int, filter: FilterCharacter): Characters
+    @join__field(graph: CHARACTERS)
+  charactersByIds(ids: [ID!]!): [Character] @join__field(graph: CHARACTERS)
+  location(id: ID!): Location @join__field(graph: CHARACTERS)
+  locations(page: Int, filter: FilterLocation): Locations
+    @join__field(graph: CHARACTERS)
+  locationsByIds(ids: [ID!]!): [Location] @join__field(graph: CHARACTERS)
+  episode(id: ID!): Episode @join__field(graph: EPISODES)
+  episodes(page: Int, filter: FilterEpisode): Episodes
+    @join__field(graph: EPISODES)
+  episodesByIds(ids: [ID!]!): [Episode] @join__field(graph: EPISODES)
+}
+
+scalar Upload @join__type(graph: CHARACTERS)

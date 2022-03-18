@@ -1,0 +1,17 @@
+services:
+  gateway:
+    build: ./
+    ports:
+      - "4000:4000"
+    working_dir: /web
+    environment:
+      - PORT=4000
+      - APOLLO_SCHEMA_CONFIG_DELIVERY_ENDPOINT=http://apibreaker
+    depends_on:
+      - apibreaker
+  apibreaker:
+    image: nginx
+    volumes:
+      - ./apibreaker.conf:/etc/nginx/nginx.conf
+    ports:
+      - "8090:80"
