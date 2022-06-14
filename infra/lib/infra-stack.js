@@ -1,4 +1,4 @@
-import { CfnOutput, Stack } from "aws-cdk-lib";
+import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
 import {
   aws_s3 as s3,
   aws_lambda as lambda,
@@ -56,19 +56,6 @@ export class InfraStack extends Stack {
       },
     });
 
-    const fallbackHandler = new lambda.Function(this, "fallback-lambda", {
-      runtime: lambda.Runtime.NODEJS_14_X,
-      code: lambda.Code.fromAsset(
-        join(process.cwd(), "../webhook-handler/out")
-      ),
-      handler: "index.fallbackHandler",
-      environment: {
-        APOLLO_KEY_ARN: apolloKey.secretArn,
-        BUCKET_NAME: bucket.bucketName,
-        BUCKET_REGION: "us-east-1",
-      },
-    });
-
     // ************************************************************************
     // API Gateway for the webhook
     // ************************************************************************
@@ -81,21 +68,8 @@ export class InfraStack extends Stack {
       }
     );
 
-    const fallbackRoute = new integrations.HttpLambdaIntegration(
-      "fallback-lambda-integration",
-      fallbackHandler,
-      {
-        payloadFormatVersion: gateway.PayloadFormatVersion.VERSION_2_0,
-      }
-    );
-
     const api = new gateway.HttpApi(this, "webhook-api", {
       defaultIntegration: webhookRoute,
-    });
-
-    api.addRoutes({
-      integration: fallbackRoute,
-      path: "/fallback",
     });
 
     // ************************************************************************
@@ -106,11 +80,14 @@ export class InfraStack extends Stack {
       runtime: lambda.Runtime.NODEJS_14_X,
       code: lambda.Code.fromAsset(join(process.cwd(), "../gateway/out")),
       handler: "index.handler",
+      // Loading the supergraph from uplink, failing, and loading from s3 takes
+      // a pretty long time.
+      timeout: Duration.seconds(10),
       environment: {
         APOLLO_KEY_ARN: apolloKey.secretArn,
         APOLLO_GRAPH_REF: /** @type {string} */ (process.env.APOLLO_GRAPH_REF),
-        SDL_BACKUP_ENDPOINT: api.apiEndpoint,
-        SDL_BACKUP_PATH: "/fallback",
+        FALLBACK_BUCKET_NAME: bucket.bucketName,
+        FALLBACK_BUCKET_REGION: "us-east-1",
       },
     });
 
@@ -132,8 +109,7 @@ export class InfraStack extends Stack {
 
     webhookKey.grantRead(webhookHandler);
     bucket.grantReadWrite(webhookHandler);
-    bucket.grantRead(fallbackHandler);
-    apolloKey.grantRead(fallbackHandler);
+    bucket.grantRead(gatewayHandler);
     apolloKey.grantRead(gatewayHandler);
 
     // ************************************************************************
