@@ -1,0 +1,4 @@
+{
+  "webhookKeyArn": "arn:aws:secretsmanager:us-east-1:667341804752:secret:webhook-key-p2S4ao",
+  "apolloKeyArn": "arn:aws:secretsmanager:us-east-1:667341804752:secret:apollo-key-zQEs1s"
+}

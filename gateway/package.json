@@ -1,0 +1,18 @@
+{
+  "name": "gateway",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@apollo/gateway": "https://pkg.csb.dev/apollographql/federation/commit/fb2bbc9f/@apollo/gateway",
+    "@aws-sdk/client-s3": "^3.109.0",
+    "@aws-sdk/client-secrets-manager": "^3.105.0",
+    "apollo-server-lambda": "^3.8.2",
+    "esbuild": "^0.14.43",
+    "graphql": "^16.5.0",
+    "typescript": "^4.7.3"
+  },
+  "scripts": {
+    "build": "esbuild --bundle index.js --outdir=out --platform=node --target=node14 --minify"
+  }
+}
